@@ -10,6 +10,7 @@ module.exports =
     atom.config.observe "less-than-slash.emptyTags", (value) =>
       @emptyTags = tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/)
 
+    # the context in text-buffer:changed handler is global
     self = @
 
     atom.workspaceView.eachEditorView (editorView) ->
@@ -17,10 +18,8 @@ module.exports =
       buffer = editor.getBuffer()
       buffer.on "changed", (event) =>
         if !self.insertingTags and event.newText == "/"
-          range = event.newRange
-          if range.start.column > 0
-            range = [[range.start.row, range.start.column - 1], [range.end.row, range.end.column]]
-            checkText = buffer.getTextInRange range
+          if event.newRange.start.column > 0
+            checkText = buffer.getTextInRange [[event.newRange.start.row, event.newRange.start.column - 1], [event.newRange.end.row, event.newRange.end.column]]
             if checkText == "</"
               text = buffer.getTextInRange [[0, 0], event.oldRange.end]
               stack = self.findTagsIn text
@@ -29,16 +28,6 @@ module.exports =
                 setTimeout ->
                   buffer.insert event.newRange.end, "#{tag}>"
                   editor.autoIndentSelectedRows()
-
-  closeCurrentTag: (editor, selection) ->
-    @insertingTags = true
-    buffer = editor.getBuffer()
-    position = selection.cursor.getBufferPosition().toArray()
-    text = buffer.getTextInRange [[0, 0], position]
-    stack = @findTagsIn text
-    if stack.length
-      @insertClosingTag selection, stack.pop()
-      @insertingTags = false
 
   findTagsIn: (text) ->
     stack = []
