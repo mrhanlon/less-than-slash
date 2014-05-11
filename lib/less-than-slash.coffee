@@ -25,8 +25,10 @@ module.exports =
               text = buffer.getTextInRange [[0, 0], event.oldRange.end]
               stack = self.findTagsIn text
               if stack.length
+                tag = stack.pop()
                 setTimeout ->
-                  self.insertClosingTag editor.getSelection(), stack.pop()
+                  buffer.insert event.newRange.end, "#{tag}>"
+                  editor.autoIndentSelectedRows()
 
   closeCurrentTag: (editor, selection) ->
     @insertingTags = true
@@ -72,8 +74,6 @@ module.exports =
       text.substr match[0].length
     else
       text.substr 1
-  insertClosingTag: (selection, tag) ->
-    selection.insertText "#{tag}>"
 
   isEmpty: (tag) ->
     @emptyTags.indexOf(tag.toLowerCase()) > -1
