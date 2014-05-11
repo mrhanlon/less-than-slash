@@ -1,6 +1,6 @@
 # </ Less Than-Slash
 
-Atom.io package for closing open tags when `&lt;/` is typed, like in Sublime Text 3.
+Atom.io package for closing open tags when `</` is typed, like in Sublime Text 3.
 
 ## Installation
 
