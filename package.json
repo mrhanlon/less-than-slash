@@ -3,8 +3,7 @@
   "main": "./lib/less-than-slash",
   "version": "0.1.0",
   "description": "Adds automatic closing of HTML tags when `</` is typed.",
-  "activationEvents": ["less-than-slash:toggle"],
-  "repository": "https://github.com/atom/less-than-slash",
+  "repository": "https://github.com/mrhanlon/less-than-slash",
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
