@@ -3,7 +3,12 @@
   "main": "./lib/less-than-slash",
   "version": "0.1.0",
   "description": "Adds automatic closing of HTML tags when `</` is typed.",
-  "repository": "https://github.com/mrhanlon/less-than-slash",
+  "author": "Matthew R Hanlon <mrhanlon@gmail.com> (https://mrhanlon.com)",
+  "bugs": "https://github.com/mrhanlon/less-than-slash/issues",
+  "repository": {
+    "url": "https://github.com/mrhanlon/less-than-slash",
+    "type": "git"
+  },
   "license": "MIT",
   "engines": {
     "atom": ">0.50.0"
