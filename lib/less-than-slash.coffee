@@ -1,3 +1,7 @@
+##
+# file: less-than-slash.coffee
+# author: @mrhanlon
+#
 module.exports =
   emptyTags: []
 
