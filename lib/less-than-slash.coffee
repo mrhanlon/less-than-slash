@@ -12,8 +12,7 @@ module.exports =
 
   activate: (state) ->
     atom.config.observe "less-than-slash.emptyTags", (value) =>
-      @emptyTags = tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/)
-
+      @emptyTags = (tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/))
     # the context in text-buffer:changed handler is global
     self = @
 
