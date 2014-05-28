@@ -49,7 +49,7 @@ describe "LessThanSlash", ->
 
     it "finds a tag that is in emptyTags and skips it", ->
       stack = []
-      text = "<br>"
+      text = "<input>"
       text = LessThanSlash.handleTag text, stack
       expect(text).toBe ">"
       expect(stack.length).toBe 0
