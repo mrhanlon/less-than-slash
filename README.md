@@ -8,4 +8,4 @@ Atom.io package for closing open tags when less-than, slash (`</`) is typed, lik
 
 `apm install less-than-slash`
 
-![Less Than Slash](less-than-slash.gif)
+![Less Than Slash](https://mrhanlon.github.io/images/less-than-slash.gif)
