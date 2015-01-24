@@ -16,8 +16,7 @@ module.exports =
     # the context in text-buffer:changed handler is global
     self = @
 
-    atom.workspaceView.eachEditorView (editorView) ->
-      editor = editorView.getEditor()
+    atom.workspace.observeTextEditors (editor) ->
       buffer = editor.getBuffer()
       buffer.on "changed", (event) =>
         if !self.insertingTags and event.newText == "/"
