@@ -27,9 +27,7 @@ module.exports =
               stack = self.findTagsIn text
               if stack.length
                 tag = stack.pop()
-                setTimeout ->
-                  buffer.insert event.newRange.end, "#{tag}>"
-                  editor.autoIndentSelectedRows()
+                buffer.insert event.newRange.end, "#{tag}>"
 
   findTagsIn: (text) ->
     stack = []
