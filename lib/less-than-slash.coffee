@@ -13,18 +13,16 @@ module.exports =
   activate: (state) ->
     atom.config.observe "less-than-slash.emptyTags", (value) =>
       @emptyTags = (tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/))
-    # the context in text-buffer:changed handler is global
-    self = @
 
-    atom.workspace.observeTextEditors (editor) ->
+    atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
       buffer.on "changed", (event) =>
-        if !self.insertingTags and event.newText == "/"
+        if !@insertingTags and event.newText == "/"
           if event.newRange.start.column > 0
             checkText = buffer.getTextInRange [[event.newRange.start.row, event.newRange.start.column - 1], [event.newRange.end.row, event.newRange.end.column]]
             if checkText == "</"
               text = buffer.getTextInRange [[0, 0], event.oldRange.end]
-              stack = self.findTagsIn text
+              stack = @findTagsIn text
               if stack.length
                 tag = stack.pop()
                 buffer.insert event.newRange.end, "#{tag}>"
