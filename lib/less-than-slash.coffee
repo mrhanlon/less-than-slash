@@ -49,18 +49,21 @@ module.exports =
     text.substr i + 3
 
   handleTag: (text, stack) ->
-    if match = text.match(/<(\/)?([a-z][^\s\/>]*)/i)
-      if tag = match[2]
-        if match[1]
-          # closing tag: find matching opening tag (if one exists)
-          while stack.length
-            break if stack.pop() is tag
-        else
-          # opening tag, possibly empty
-          stack.push tag unless @isEmpty(tag)
-      text.substr match[0].length
-    else
-      text.substr 1
+    # check if it's a self closing tag
+    unless match = text.match(/(<.*\/>)/)
+      if match = text.match(/<(\/)?([a-z][^\s\/>]*)/i)
+        if tag = match[2]
+          if match[1]
+            # closing tag: find matching opening tag (if one exists)
+            while stack.length
+              break if stack.pop() is tag
+          else
+            # opening tag, possibly empty
+            stack.push tag unless @isEmpty(tag)
+        text.substr match[0].length
+      else
+        text.substr 1
+    else text.substr match[0].length
 
   isEmpty: (tag) ->
     @emptyTags.indexOf(tag.toLowerCase()) > -1

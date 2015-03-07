@@ -54,6 +54,13 @@ describe "LessThanSlash", ->
       expect(text).toBe ">"
       expect(stack.length).toBe 0
 
+    it "finds a self closing tag and skips it", ->
+      stack = []
+      text = "<br/>"
+      text = LessThanSlash.handleTag text, stack
+      expect(text).toBe ">"
+      expect(stack.length).toBe 0
+
     it "doesn't find a tag and returns text, one char advanced", ->
       stack = []
       text = "<- this guy"
