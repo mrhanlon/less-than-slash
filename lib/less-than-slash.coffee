@@ -49,21 +49,42 @@ module.exports =
     text.substr i + 3
 
   handleTag: (text, stack) ->
-    # check if it's a self closing tag
-    unless match = text.match(/(<.*\/>)/)
-      if match = text.match(/<(\/)?([a-z][^\s\/>]*)/i)
-        if tag = match[2]
-          if match[1]
-            # closing tag: find matching opening tag (if one exists)
-            while stack.length
-              break if stack.pop() is tag
-          else
-            # opening tag, possibly empty
-            stack.push tag unless @isEmpty(tag)
-        text.substr match[0].length
+    if tag = @parseTag(text)
+      if tag.opening
+        # opening tag, possibly empty
+        stack.push tag.element unless @isEmpty(tag.element)
+      # tag
+      else if tag.closing
+        # closing tag: find matching opening tag (if one exists)
+        while stack.length
+          break if stack.pop() is tag.element
+      else if tag.selfClosing
+        # self closing tag: ignore it
       else
-        text.substr 1
-    else text.substr match[0].length
+        console.error 'There are problems...'
+      text.substr tag.length
+    else
+      # no match
+      text.substr 1
+
+  parseTag: (text) ->
+    result = {
+      opening: false
+      closing: false
+      selfClosing: false
+      element: ''
+      length: 0
+    }
+    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-]+)(=["'](.*)["'])?)*\s*(\/)?>/i)
+    if match
+      result.element     = match[2]
+      result.length      = match[0].length
+      result.opening     = true unless match[1]
+      result.closing     = true if     match[1]
+      result.selfClosing = true if     match[7]
+      result
+    else
+      null
 
   isEmpty: (tag) ->
     @emptyTags.indexOf(tag.toLowerCase()) > -1
