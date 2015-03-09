@@ -79,9 +79,9 @@ module.exports =
     if match
       result.element     = match[2]
       result.length      = match[0].length
-      result.opening     = true unless match[1] or match[7]
-      result.closing     = true if     match[1]
-      result.selfClosing = true if     match[7]
+      result.opening     = if match[1] or match[7] then false else true
+      result.closing     = if match[1] then true else false
+      result.selfClosing = if match[7] then true else false
       result
     else
       null
