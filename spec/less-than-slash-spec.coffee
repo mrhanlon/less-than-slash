@@ -35,7 +35,7 @@ describe "LessThanSlash", ->
   describe "parseTag does its thing", ->
     it "detects an opening tag", ->
       text = "<div>"
-      expect(LessThanSlash.parseTag text).toBe {
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -45,7 +45,7 @@ describe "LessThanSlash", ->
 
     it "detects a closing tag", ->
       text = "</div>"
-      expect(LessThanSlash.parseTag text).toBe {
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: false
         closing: true
         selfClosing: false
@@ -55,7 +55,7 @@ describe "LessThanSlash", ->
 
     it "detects a self closing tag", ->
       text = "<br/>"
-      expect(LessThanSlash.parseTag text).toBe {
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: false
         closing: false
         selfClosing: true
@@ -69,7 +69,7 @@ describe "LessThanSlash", ->
 
     it "doesn't have a cow when an element has properties", ->
       text = "<div class=\"container\">"
-      expect(LessThanSlash.parseTag text).toBe {
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -79,7 +79,7 @@ describe "LessThanSlash", ->
 
     it "doesn't have a cow when you use the wrong quotes", ->
       text = "<div class='container'>"
-      expect(LessThanSlash.parseTag text).toBe {
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -89,7 +89,7 @@ describe "LessThanSlash", ->
 
     it "doesn't have a cow when you use retarded spacing", ->
       text = "<div  class=\"container\" \n  foo=\"bar\">"
-      expect(LessThanSlash.parseTag text).toBe {
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -99,22 +99,22 @@ describe "LessThanSlash", ->
 
     it "doesn't have a cow when you use lone properties", ->
       text = "<input type=\"text\" required/>"
-      expect(LessThanSlash.parseTag text).toBe {
-        opening: true
+      expect(LessThanSlash.parseTag text).toEqual {
+        opening: false
         closing: false
-        selfClosing: false
+        selfClosing: true
         element: 'input'
         length: 29
       }
 
     it "doesn't have a cow when properties contain a '>'", ->
-      text = "<p ng-show\"5 > 3\">"
-      expect(LessThanSlash.parseTag text).toBe {
+      text = "<p ng-show=\"3 > 5\">Uh oh!"
+      expect(LessThanSlash.parseTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
         element: 'p'
-        length: 18
+        length: 19
       }
 
   describe "handleTag does its thing", ->
