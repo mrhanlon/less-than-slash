@@ -117,6 +117,26 @@ describe "LessThanSlash", ->
         length: 19
       }
 
+    it "finds the expected tag when tags are nested", ->
+      text = "<a><i>"
+      expect(LessThanSlash.parseTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'a'
+        length: 3
+      }
+
+    it "finds the expected tag when tags with attributes are nested", ->
+      text = "<a href=\"#\"><i class=\"fa fa-home\">"
+      expect(LessThanSlash.parseTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'a'
+        length: 12
+      }
+
   describe "handleTag does its thing", ->
     it "finds an opening tag", ->
       stack = []
@@ -161,3 +181,10 @@ describe "LessThanSlash", ->
       expect(stack[0]).toBe "div"
       expect(stack[1]).toBe "p"
       expect(stack[2]).toBe "span"
+
+    it "correctly finds nested tags with attributes", ->
+      text = "<a href=\"#\"><i class=\"fa fa-home\">"
+      stack = LessThanSlash.findTagsIn text
+      expect(stack.length).toBe 2
+      expect(stack[0]).toBe "a"
+      expect(stack[1]).toBe "i"

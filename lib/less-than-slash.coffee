@@ -75,7 +75,7 @@ module.exports =
       element: ''
       length: 0
     }
-    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-]+)(=["'](.*)["'])?)*\s*(\/)?>/i)
+    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-]+)(=["'](.*?)["'])?)*\s*(\/)?>/i)
     if match
       result.element     = match[2]
       result.length      = match[0].length
