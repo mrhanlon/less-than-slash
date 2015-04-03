@@ -16,7 +16,7 @@ module.exports =
 
     atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
-      buffer.on "changed", (event) =>
+      buffer.onDidChange (event) =>
         if !@insertingTags and event.newText == "/"
           if event.newRange.start.column > 0
             checkText = buffer.getTextInRange [[event.newRange.start.row, event.newRange.start.column - 1], [event.newRange.end.row, event.newRange.end.column]]
