@@ -1,3 +1,10 @@
+### v0.5.0
+
+Fixed deprecation cop warnings:
+
+- `TextBuffer.on` is deprecated; use `TextBuffer.onDidChange` instead
+- Package styles should be in `/styles` not `/stylesheets`. However, less-than-slash doesn't have any styles so just nuked the practically empty stylesheet instead. :fire: :fire: :fire:
+
 ### v0.4.0
 
 Now automatically ignores self-closed tags, e.g. `<my-element />`, without needing to specify in `@emptyTags`.
