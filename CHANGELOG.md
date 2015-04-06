@@ -1,3 +1,9 @@
+### v0.6.0
+
+Fixed deprecation warnings:
+
+- Support new configuration schema
+
 ### v0.5.0
 
 Fixed deprecation cop warnings:
