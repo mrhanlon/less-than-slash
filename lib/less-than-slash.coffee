@@ -7,8 +7,10 @@ module.exports =
 
   insertingTags: false
 
-  configDefaults:
-    emptyTags: "br, hr, img, input, link, meta, area, base, col, command, embed, keygen, param, source, track, wbr"
+  config:
+    emptyTags:
+      type: "string"
+      default: "br, hr, img, input, link, meta, area, base, col, command, embed, keygen, param, source, track, wbr"
 
   activate: (state) ->
     atom.config.observe "less-than-slash.emptyTags", (value) =>
