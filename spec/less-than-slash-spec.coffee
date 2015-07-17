@@ -87,6 +87,16 @@ describe "LessThanSlash", ->
         length: 23
       }
 
+    it "plays nicely with JSX curly brace property values", ->
+      text = "<input type=\"text\"disabled={this.props.isDisabled}/>"
+      expect(LessThanSlash.parseTag text).toEqual {
+        opening: false
+        closing: false
+        selfClosing: true
+        element: 'input'
+        length: 52
+      }
+
     it "doesn't have a cow when you use retarded spacing", ->
       text = "<div  class=\"container\" \n  foo=\"bar\">"
       expect(LessThanSlash.parseTag text).toEqual {
