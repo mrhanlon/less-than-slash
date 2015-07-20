@@ -2,14 +2,14 @@
 # file: less-than-slash-spec.coffee
 # author: @mrhanlon
 #
-{WorkspaceView} = require 'atom'
 LessThanSlash = require '../lib/less-than-slash'
 
 describe "LessThanSlash", ->
   activationPromise = null
+  workspaceElement = null
 
   beforeEach ->
-    atom.workspaceView = new WorkspaceView
+    workspaceElement = atom.views.getView(atom.workspace)
     activationPromise = atom.packages.activatePackage('less-than-slash')
 
   describe "isEmpty and emptyTags", ->
