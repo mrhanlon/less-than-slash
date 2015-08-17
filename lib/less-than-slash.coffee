@@ -32,13 +32,18 @@ module.exports =
   findTagsIn: (text) ->
     stack = []
     while text
-      console.log text
       if text[0...4] is "<!--"
         if (_text = @handleComment text)?
           text = _text
         else
           stack = []
           text = text[4..]
+      else if text[0...9] is "<![CDATA["
+        if (_text = @handleCDATA text)?
+          text = _text
+        else
+          stack = []
+          text = text[9..]
       else if text[0] is "<"
         text = @handleTag text, stack
       else
@@ -51,6 +56,13 @@ module.exports =
 
   handleComment: (text) ->
     ind = text.indexOf '-->'
+    if !!~ind
+      text.substr ind + 3
+    else
+      null
+
+  handleCDATA: (text) ->
+    ind = text.indexOf ']]>'
     if !!~ind
       text.substr ind + 3
     else
