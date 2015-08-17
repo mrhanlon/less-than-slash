@@ -32,23 +32,29 @@ module.exports =
   findTagsIn: (text) ->
     stack = []
     while text
-      if text.substr(0, 4) is "<!--"
-        text = @handleComment text
-      else if text.substr(0, 1) is "<"
+      console.log text
+      if text[0...4] is "<!--"
+        if (_text = @handleComment text)?
+          text = _text
+        else
+          stack = []
+          text = text[4..]
+      else if text[0] is "<"
         text = @handleTag text, stack
       else
         index = text.indexOf("<")
-        if index > -1
-          text = text.substr(index)
+        if !!~index
+          text = text.substr index
         else
           break
     stack
 
   handleComment: (text) ->
-    i = 4
-    while i < text.length and text.substr(i, 3) isnt "-->"
-      i++
-    text.substr i + 3
+    ind = text.indexOf '-->'
+    if !!~ind
+      text.substr ind + 3
+    else
+      null
 
   handleTag: (text, stack) ->
     if tag = @parseTag(text)
