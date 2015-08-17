@@ -32,6 +32,45 @@ describe "LessThanSlash", ->
       text = "<!-- foobar <!-- For some reason someone did this --> -->"
       expect(LessThanSlash.handleComment text).toBe " -->"
 
+    it "doesn't complete from outside comment", ->
+      text = "<div><!--"
+      expect(LessThanSlash.findTagsIn text).toEqual []
+
+    it "correctly completes around comment", ->
+        text = "<div><!--<span>-->"
+        stack = LessThanSlash.findTagsIn text
+        expect(stack[0]).toBe "div"
+
+    it "completes within comment", ->
+        text = "<div><!--<span>"
+        stack = LessThanSlash.findTagsIn text
+        expect(stack.length).toBe 1
+        expect(stack[0]).toBe "span"
+
+    describe "handleCDATA does its thing", ->
+      it "skips a CDATA", ->
+        text = "<![CDATA[This is some ipsum]]><p>Lorem ipsum...</p>"
+        expect(LessThanSlash.handleCDATA text).toBe "<p>Lorem ipsum...</p>"
+
+      it "returns nothing if CDATA at end", ->
+        text = "<![CDATA[This is a CDATA at the end]]>"
+        expect(LessThanSlash.handleCDATA text).toBe ""
+
+      it "doesn't complete from outside CDATA", ->
+        text = "<div><![CDATA["
+        expect(LessThanSlash.findTagsIn text).toEqual []
+
+      it "correctly completes around CDATA", ->
+          text = "<div><![CDATA[<span>]]>"
+          stack = LessThanSlash.findTagsIn text
+          expect(stack[0]).toBe "div"
+
+      it "completes within CDATA", ->
+          text = "<div><![CDATA[<span>"
+          stack = LessThanSlash.findTagsIn text
+          expect(stack.length).toBe 1
+          expect(stack[0]).toBe "span"
+
   describe "parseTag does its thing", ->
     it "detects an opening tag", ->
       text = "<div>"
@@ -95,6 +134,16 @@ describe "LessThanSlash", ->
         selfClosing: true
         element: 'input'
         length: 52
+      }
+
+    it "plays nicely with multiline namespaced attributes", ->
+      text = "<elem\n ns1:attr1=\"text\"\n  ns2:attr2=\"text\"\n>"
+      expect(LessThanSlash.parseTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'elem'
+        length: 44
       }
 
     it "doesn't have a cow when you use retarded spacing", ->
