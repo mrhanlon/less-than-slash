@@ -97,6 +97,16 @@ describe "LessThanSlash", ->
         length: 52
       }
 
+    it "plays nicely with multiline namespaced attributes", ->
+      text = "<elem\n ns1:attr1=\"text\"\n  ns2:attr2=\"text\"\n>"
+      expect(LessThanSlash.parseTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'elem'
+        length: 44
+      }
+
     it "doesn't have a cow when you use retarded spacing", ->
       text = "<div  class=\"container\" \n  foo=\"bar\">"
       expect(LessThanSlash.parseTag text).toEqual {
