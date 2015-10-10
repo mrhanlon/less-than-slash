@@ -39,13 +39,13 @@ describe "LessThanSlash", ->
     it "correctly completes around comment", ->
         text = "<div><!--<span>-->"
         stack = LessThanSlash.findTagsIn text
-        expect(stack[0]).toBe "div"
+        expect(stack[0].element).toBe "div"
 
     it "completes within comment", ->
         text = "<div><!--<span>"
         stack = LessThanSlash.findTagsIn text
         expect(stack.length).toBe 1
-        expect(stack[0]).toBe "span"
+        expect(stack[0].element).toBe "span"
 
     describe "handleCDATA does its thing", ->
       it "skips a CDATA", ->
@@ -63,13 +63,13 @@ describe "LessThanSlash", ->
       it "correctly completes around CDATA", ->
           text = "<div><![CDATA[<span>]]>"
           stack = LessThanSlash.findTagsIn text
-          expect(stack[0]).toBe "div"
+          expect(stack[0].element).toBe "div"
 
       it "completes within CDATA", ->
           text = "<div><![CDATA[<span>"
           stack = LessThanSlash.findTagsIn text
           expect(stack.length).toBe 1
-          expect(stack[0]).toBe "span"
+          expect(stack[0].element).toBe "span"
 
   describe "parseTag does its thing", ->
     it "detects an opening tag", ->
@@ -78,7 +78,8 @@ describe "LessThanSlash", ->
         opening: true
         closing: false
         selfClosing: false
-        element: 'div'
+        element: 'div',
+        brackets: '<'
         length: 5
       }
 
@@ -89,6 +90,7 @@ describe "LessThanSlash", ->
         closing: true
         selfClosing: false
         element: 'div'
+        brackets: '<'
         length: 6
       }
 
@@ -99,6 +101,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: true
         element: 'br'
+        brackets: '<'
         length: 5
       }
 
@@ -113,6 +116,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'div'
+        brackets: '<'
         length: 23
       }
 
@@ -123,6 +127,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'div'
+        brackets: '<'
         length: 23
       }
 
@@ -133,6 +138,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: true
         element: 'input'
+        brackets: '<'
         length: 52
       }
 
@@ -143,6 +149,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'elem'
+        brackets: '<'
         length: 44
       }
 
@@ -153,6 +160,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'div'
+        brackets: '<'
         length: 37
       }
 
@@ -163,6 +171,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: true
         element: 'input'
+        brackets: '<'
         length: 29
       }
 
@@ -173,6 +182,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'p'
+        brackets: '<'
         length: 19
       }
 
@@ -183,6 +193,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'a'
+        brackets: '<'
         length: 3
       }
 
@@ -193,6 +204,7 @@ describe "LessThanSlash", ->
         closing: false
         selfClosing: false
         element: 'a'
+        brackets: '<'
         length: 12
       }
 
@@ -202,7 +214,7 @@ describe "LessThanSlash", ->
       text = "<div>"
       text = LessThanSlash.handleTag text, stack
       expect(text).toBe ""
-      expect(stack[0]).toBe "div"
+      expect(stack[0].element).toBe "div"
 
     it "finds a closing tag and pops the stack", ->
       stack = ["div"]
@@ -237,13 +249,57 @@ describe "LessThanSlash", ->
       text = "<div><p><i></i><span>"
       stack = LessThanSlash.findTagsIn text
       expect(stack.length).toBe 3
-      expect(stack[0]).toBe "div"
-      expect(stack[1]).toBe "p"
-      expect(stack[2]).toBe "span"
+      expect(stack[0].element).toBe "div"
+      expect(stack[1].element).toBe "p"
+      expect(stack[2].element).toBe "span"
 
     it "correctly finds nested tags with attributes", ->
       text = "<a href=\"#\"><i class=\"fa fa-home\">"
       stack = LessThanSlash.findTagsIn text
       expect(stack.length).toBe 2
-      expect(stack[0]).toBe "a"
-      expect(stack[1]).toBe "i"
+      expect(stack[0].element).toBe "a"
+      expect(stack[1].element).toBe "i"
+
+  describe "parseHandlebars does its thing", ->
+    it "detects an opening tag", ->
+      text = "{{#if currentUser}}"
+      expect(LessThanSlash.parseHandlebars text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'if',
+        brackets: '{{'
+        length: 19
+      }
+
+    it "detects a closing tag", ->
+      text = "{{/if}}"
+      expect(LessThanSlash.parseHandlebars text).toEqual {
+        opening: false
+        closing: true
+        selfClosing: false
+        element: 'if'
+        brackets: '{{'
+        length: 7
+      }
+
+    it "returns null when there is no tag", ->
+      text = "No tag here!"
+      expect(LessThanSlash.parseHandlebars text).toBe null
+
+  describe "minIndex", ->
+    it "returns the lower number", ->
+      lower = LessThanSlash.minIndex(3, 5)
+      expect(lower).toBe 3
+      lower = LessThanSlash.minIndex(5, 3)
+      expect(lower).toBe 3
+
+    it "discards a negative index", ->
+      lower = LessThanSlash.minIndex(3, -1)
+      expect(lower).toBe 3
+      lower = LessThanSlash.minIndex(-1, 3)
+      expect(lower).toBe 3
+
+    it "passes on double negative indicies", ->
+      lower = LessThanSlash.minIndex(-1, -1)
+      expect(lower).toBe -1
