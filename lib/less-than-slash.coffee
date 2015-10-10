@@ -32,23 +32,41 @@ module.exports =
   findTagsIn: (text) ->
     stack = []
     while text
-      if text.substr(0, 4) is "<!--"
-        text = @handleComment text
-      else if text.substr(0, 1) is "<"
+      if text[0...4] is "<!--"
+        if (_text = @handleComment text)?
+          text = _text
+        else
+          stack = []
+          text = text[4..]
+      else if text[0...9] is "<![CDATA["
+        if (_text = @handleCDATA text)?
+          text = _text
+        else
+          stack = []
+          text = text[9..]
+      else if text[0] is "<"
         text = @handleTag text, stack
       else
         index = text.indexOf("<")
-        if index > -1
-          text = text.substr(index)
+        if !!~index
+          text = text.substr index
         else
           break
     stack
 
   handleComment: (text) ->
-    i = 4
-    while i < text.length and text.substr(i, 3) isnt "-->"
-      i++
-    text.substr i + 3
+    ind = text.indexOf '-->'
+    if !!~ind
+      text.substr ind + 3
+    else
+      null
+
+  handleCDATA: (text) ->
+    ind = text.indexOf ']]>'
+    if !!~ind
+      text.substr ind + 3
+    else
+      null
 
   handleTag: (text, stack) ->
     if tag = @parseTag(text)
@@ -77,7 +95,7 @@ module.exports =
       element: ''
       length: 0
     }
-    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-]+)(=["'{](.*?)["'}])?)*\s*(\/)?>/i)
+    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-:]+)(=["'{](.*?)["'}])?)*\s*(\/)?>/i)
     if match
       result.element     = match[2]
       result.length      = match[0].length

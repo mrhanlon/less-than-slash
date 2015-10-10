@@ -1,3 +1,14 @@
+### v0.8.0
+
+- Support for attributes spaced across multiple lines
+- Proper tag handling inside of comments
+- Support for CDATA
+
+### v0.7.0
+
+- Fixed deprecation issue in specs
+- Add support for curly braces in property values; #12
+
 ### v0.6.0
 
 Fixed deprecation warnings:
