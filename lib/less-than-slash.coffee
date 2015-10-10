@@ -5,8 +5,6 @@
 module.exports =
   emptyTags: []
 
-  insertingTags: false
-
   config:
     emptyTags:
       type: "string"
@@ -19,15 +17,25 @@ module.exports =
     atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
       buffer.onDidChange (event) =>
-        if !@insertingTags and event.newText == "/"
+        if event.newText == "/"
           if event.newRange.start.column > 0
-            checkText = buffer.getTextInRange [[event.newRange.start.row, event.newRange.start.column - 1], [event.newRange.end.row, event.newRange.end.column]]
-            if checkText == "</"
+            checkText = buffer.getTextInRange [[event.newRange.start.row, event.newRange.start.column - 2], [event.newRange.end.row, event.newRange.end.column]]
+            # Check if we just typed a closing tag </
+            # We need to substr relative to the length of the checkText cause
+            # it could be only 2 chars long if we type </ at the start of a line
+            if checkText.substr(checkText.length - 2, checkText.length) == "</"
               text = buffer.getTextInRange [[0, 0], event.oldRange.end]
               stack = @findTagsIn text
               if stack.length
                 tag = stack.pop()
-                buffer.insert event.newRange.end, "#{tag}>"
+                buffer.insert event.newRange.end, "#{tag.element}>"
+            # Check if we just typed a handlebars closing tag {{/
+            else if checkText == '{{/'
+              text = buffer.getTextInRange [[0, 0], event.oldRange.end]
+              stack = @findTagsIn text
+              if stack.length
+                tag = stack.pop()
+                buffer.insert event.newRange.end, "#{tag.element}"
 
   findTagsIn: (text) ->
     stack = []
@@ -44,15 +52,23 @@ module.exports =
         else
           stack = []
           text = text[9..]
-      else if text[0] is "<"
+      else if text[0] is "<" or text[0...2] is '{{'
         text = @handleTag text, stack
       else
-        index = text.indexOf("<")
+        index = @minIndex(text.indexOf("<"), text.indexOf("{{"))
         if !!~index
           text = text.substr index
         else
           break
     stack
+
+  # Finds the minimum index out of two indexes, taking into account indexes of -1
+  minIndex: (a, b) ->
+    return a if a is b
+    return a if b < 0
+    return b if a < 0
+    return a if a < b
+    return b if b < a
 
   handleComment: (text) ->
     ind = text.indexOf '-->'
@@ -69,15 +85,16 @@ module.exports =
       null
 
   handleTag: (text, stack) ->
-    if tag = @parseTag(text)
+    if tag = @parse(text)
       if tag.opening
         # opening tag, possibly empty
-        stack.push tag.element unless @isEmpty(tag.element)
+        stack.push {element: tag.element, brackets: tag.brackets} unless @isEmpty(tag.element)
       # tag
       else if tag.closing
         # closing tag: find matching opening tag (if one exists)
         while stack.length
-          break if stack.pop() is tag.element
+          currentTag = stack.pop()
+          break if currentTag.element is tag.element and currentTag.brackets is tag.brackets
       else if tag.selfClosing
         # self closing tag: ignore it
       else
@@ -87,12 +104,38 @@ module.exports =
       # no match
       text.substr 1
 
+  parse: (text) ->
+    if text[0] == '<'
+      return @parseTag(text)
+    if text[0...2] == '{{'
+      return @parseHandlebars(text)
+    return null
+
+  parseHandlebars: (text) ->
+    result = {
+      opening: false
+      closing: false
+      element: ''
+      brackets: '{{'
+    }
+    match = text.match(/\{\{([#\/])([^\s\/>]+)(\s+([\w-:]+?))*?\s*?\}\}/i)
+    if match
+      result.element     = match[2]
+      result.length      = match[0].length
+      result.opening     = if match[1] is '#' then true else false
+      result.closing     = if match[1] is '/' then true else false
+      result.selfClosing = false
+      result
+    else
+      null
+
   parseTag: (text) ->
     result = {
       opening: false
       closing: false
       selfClosing: false
       element: ''
+      brackets: '<'
       length: 0
     }
     match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-:]+)(=["'{](.*?)["'}])?)*\s*(\/)?>/i)
