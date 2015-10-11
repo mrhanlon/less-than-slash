@@ -18,13 +18,41 @@ describe "LessThanSlash", ->
         '<div class="moo"><a href="/cows">More cows!</'
       getText = ->
         '<div class="moo"><a href="/cows">More cows!<'
-      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe 'a>'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</a>'
 
       getCheckText = ->
         '<div class="moo"><a href="/cows">More cows!</a></'
       getText = ->
         '<div class="moo"><a href="/cows">More cows!</a><'
-      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe 'div>'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</div>'
+
+    it "also works for comments", ->
+      getCheckText = ->
+        '<!--<div class="moo"><a href="/cows">More cows!</a></div></'
+      getText = ->
+        '<!--<div class="moo"><a href="/cows">More cows!</a></div><'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '-->'
+
+    it "also works inside comments", ->
+      getCheckText = ->
+        '<!--<div class="moo"><a href="/cows">More cows!</a></'
+      getText = ->
+        '<!--<div class="moo"><a href="/cows">More cows!</a><'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</div>'
+
+    it "also works for XML CDATA", ->
+      getCheckText = ->
+        '<![CDATA[<div class="moo"><a href="/cows">More cows!</a></div></'
+      getText = ->
+        '<![CDATA[<div class="moo"><a href="/cows">More cows!</a></div><'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe ']]>'
+
+    it "also works inside XML CDATA", ->
+      getCheckText = ->
+        '<![CDATA[<div class="moo"><a href="/cows">More cows!</a></'
+      getText = ->
+        '<![CDATA[<div class="moo"><a href="/cows">More cows!</a><'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</div>'
 
     it "returns null if there are no tags to close", ->
       getCheckText = ->
@@ -44,13 +72,13 @@ describe "LessThanSlash", ->
         '<div class="moo"><a href="/cows">More cows!</i></'
       getText = ->
         '<div class="moo"><a href="/cows">More cows!</i><'
-      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe 'a>'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</a>'
 
       getCheckText = ->
         '<div class="moo"><a href="/cows"><em>More cows!</i></a></'
       getText = ->
         '<div class="moo"><a href="/cows"><em>More cows!</i></a><'
-      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe 'div>'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</div>'
 
   describe "getNextCloseableTag", ->
     it "returns the next closeable tag", ->
@@ -157,7 +185,7 @@ describe "LessThanSlash", ->
       ]
 
   describe "parseNextTag", ->
-    it "parses an opening tag", ->
+    it "parses tags, comments, and cdata", ->
       text = "<div>"
       expect(LessThanSlash.parseNextTag text).toEqual {
         opening: true
@@ -168,9 +196,41 @@ describe "LessThanSlash", ->
         length: 5
       }
 
+      text = "<!--"
+      expect(LessThanSlash.parseNextTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: '-->'
+        type: 'xml-comment'
+        length: 4
+      }
+
+      text = "<![CDATA["
+      expect(LessThanSlash.parseNextTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: ']]>'
+        type: 'xml-cdata'
+        length: 9
+      }
+
+  describe "parseXMLTag", ->
+    it "parses an opening tag", ->
+      text = "<div>"
+      expect(LessThanSlash.parseXMLTag text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'div',
+        type: 'xml'
+        length: 5
+      }
+
     it "parses a closing tag", ->
       text = "</div>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: false
         closing: true
         selfClosing: false
@@ -181,7 +241,7 @@ describe "LessThanSlash", ->
 
     it "parses self closing tags", ->
       text = "<br/>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: false
         closing: false
         selfClosing: true
@@ -192,11 +252,11 @@ describe "LessThanSlash", ->
 
     it "returns null when there is no tag", ->
       text = "No tag here!"
-      expect(LessThanSlash.parseNextTag text).toBe null
+      expect(LessThanSlash.parseXMLTag text).toBe null
 
     it "works around element properties", ->
       text = "<div class=\"container\">"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -207,7 +267,7 @@ describe "LessThanSlash", ->
 
     it "doesn't care which quotes you use", ->
       text = "<div class='container'>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -217,7 +277,7 @@ describe "LessThanSlash", ->
       }
 
       text = "<div class=`container`>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -228,7 +288,7 @@ describe "LessThanSlash", ->
 
     it "plays nicely with JSX curly brace property values", ->
       text = "<input type=\"text\" disabled={this.props.isDisabled}/>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: false
         closing: false
         selfClosing: true
@@ -239,7 +299,7 @@ describe "LessThanSlash", ->
 
     it "plays nicely with multiline namespaced attributes", ->
       text = "<elem\n ns1:attr1=\"text\"\n  ns2:attr2=\"text\"\n>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -250,7 +310,7 @@ describe "LessThanSlash", ->
 
     it "works around weird spacing", ->
       text = "<div  class=\"container\" \n  foo=\"bar\">"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -261,7 +321,7 @@ describe "LessThanSlash", ->
 
     it "works around lone properties", ->
       text = "<input type=\"text\" required/>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: false
         closing: false
         selfClosing: true
@@ -272,7 +332,7 @@ describe "LessThanSlash", ->
 
     it "doesn't have a cow when properties contain a '>'", ->
       text = "<p ng-show=\"3 > 5\">Uh oh!"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -283,7 +343,7 @@ describe "LessThanSlash", ->
 
     it "finds the expected tag when tags are nested", ->
       text = "<a><i>"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
@@ -294,13 +354,57 @@ describe "LessThanSlash", ->
 
     it "finds the expected tag when tags with attributes are nested", ->
       text = "<a href=\"#\"><i class=\"fa fa-home\">"
-      expect(LessThanSlash.parseNextTag text).toEqual {
+      expect(LessThanSlash.parseXMLTag text).toEqual {
         opening: true
         closing: false
         selfClosing: false
         element: 'a'
         type: 'xml'
         length: 12
+      }
+
+  describe "parseXMLComment", ->
+    it "parses comments as if they were tags", ->
+      text = "<!--"
+      expect(LessThanSlash.parseXMLComment text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: '-->'
+        type: 'xml-comment'
+        length: 4
+      }
+
+      text = "-->"
+      expect(LessThanSlash.parseXMLComment text).toEqual {
+        opening: false
+        closing: true
+        selfClosing: false
+        element: '-->'
+        type: 'xml-comment'
+        length: 3
+      }
+
+  describe "parseXMLCDATA", ->
+    it "parses CDATA as if they were tags", ->
+      text = "<![CDATA["
+      expect(LessThanSlash.parseXMLCDATA text).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: ']]>'
+        type: 'xml-cdata'
+        length: 9
+      }
+
+      text = "]]>"
+      expect(LessThanSlash.parseXMLCDATA text).toEqual {
+        opening: false
+        closing: true
+        selfClosing: false
+        element: ']]>'
+        type: 'xml-cdata'
+        length: 3
       }
 
   describe "isEmpty", ->
@@ -339,3 +443,14 @@ describe "LessThanSlash", ->
       a = "chunky bacon"
       b = "chunky"
       expect(LessThanSlash.stringEndsWith(a, b)).toBe false
+
+  describe "stringStartsWith", ->
+    it "returns true if the first string ends starts with the second", ->
+      a = "chunky bacon"
+      b = "chunky"
+      expect(LessThanSlash.stringStartsWith(a, b)).toBe true
+
+    it "returns false if the first string does not start with the second", ->
+      a = "don't have a cow, man!"
+      b = "man!"
+      expect(LessThanSlash.stringStartsWith(a, b)).toBe false

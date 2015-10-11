@@ -29,7 +29,13 @@ module.exports =
             getText = ->
               buffer.getTextInRange [[0, 0], event.oldRange.end]
             if textToInsert = @onSlash getCheckText, getText
-              buffer.insert event.newRange.end, textToInsert
+              buffer.delete [
+                [event.newRange.end.row, event.newRange.end.column - 2],
+                event.newRange.end
+              ]
+              buffer.insert [
+                  event.newRange.end.row, event.newRange.end.column - 2
+                ], textToInsert
 
   # Takes functions that provide the data so we can lazily collect them
   onSlash: (getCheckText, getText) ->
@@ -37,7 +43,10 @@ module.exports =
     if @stringEndsWith checkText, '</'
       text = getText()
       if tag = @getNextCloseableTag text
-        return "#{tag.element}>"
+        if tag.type == "xml"
+          return "</#{tag.element}>"
+        else
+          return "#{tag.element}"
     return null
 
   getNextCloseableTag: (text) ->
@@ -89,6 +98,28 @@ module.exports =
       return text.substr 1
 
   parseNextTag: (text) ->
+    for parser in @parsers
+      for test in parser.test
+        if @stringStartsWith(text, test)
+          return this[parser.parse](text)
+    null
+
+  parsers: [
+    {
+      test: ["<!--", "-->"]
+      parse: 'parseXMLComment'
+    }
+    {
+      test: ["<![CDATA[", "]]>"]
+      parse: 'parseXMLCDATA'
+    }
+    {
+      test: ["<"]
+      parse: 'parseXMLTag'
+    }
+  ]
+
+  parseXMLTag: (text) ->
     result = {
       opening: false
       closing: false
@@ -108,8 +139,47 @@ module.exports =
     else
       null
 
+  parseXMLComment: (text) ->
+    result = {
+      opening: false
+      closing: false
+      selfClosing: false
+      element: '-->'
+      type: 'xml-comment'
+      length: 0
+    }
+    match = text.match(/(<!--)|(-->)/)
+    if match
+      result.length  = match[0].length
+      result.opening = if match[1] then true else false
+      result.closing = if match[2] then true else false
+      result
+    else
+      null
+
+  parseXMLCDATA: (text) ->
+    result = {
+      opening: false
+      closing: false
+      selfClosing: false
+      element: ']]>'
+      type: 'xml-cdata'
+      length: 0
+    }
+    match = text.match(/(<!\[CDATA\[)|(\]\]>)/i)
+    if match
+      result.length  = match[0].length
+      result.opening = if match[1] then true else false
+      result.closing = if match[2] then true else false
+      result
+    else
+      null
+
   isEmpty: (tag) ->
-    @emptyTags.indexOf(tag.toLowerCase()) > -1
+    if tag
+      @emptyTags.indexOf(tag.toLowerCase()) > -1
+    else
+      false
 
   # Utils
 
@@ -124,3 +194,6 @@ module.exports =
   # Checks if one string ends in another
   stringEndsWith: (a, b) ->
     a.substr(a.length - b.length, a.length) == b
+
+  stringStartsWith: (a, b) ->
+    a.substr(0, b.length) == b
