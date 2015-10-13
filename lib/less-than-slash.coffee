@@ -5,97 +5,130 @@
 module.exports =
   emptyTags: []
 
-  insertingTags: false
-
   config:
     emptyTags:
       type: "string"
       default: "br, hr, img, input, link, meta, area, base, col, command, embed, keygen, param, source, track, wbr"
 
   activate: (state) ->
+    # Register config change handler to update the empty tags list
     atom.config.observe "less-than-slash.emptyTags", (value) =>
       @emptyTags = (tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/))
 
     atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
       buffer.onDidChange (event) =>
-        if !@insertingTags and event.newText == "/"
+        if event.newText == "/"
+          # Ignore it if its right at the start of a line
           if event.newRange.start.column > 0
-            checkText = buffer.getTextInRange [[event.newRange.start.row, event.newRange.start.column - 1], [event.newRange.end.row, event.newRange.end.column]]
-            if checkText == "</"
-              text = buffer.getTextInRange [[0, 0], event.oldRange.end]
-              stack = @findTagsIn text
-              if stack.length
-                tag = stack.pop()
-                buffer.insert event.newRange.end, "#{tag}>"
+            getCheckText = ->
+              buffer.getTextInRange([
+                [event.newRange.start.row, 0],
+                event.newRange.end
+              ])
+            getText = ->
+              buffer.getTextInRange [[0, 0], event.oldRange.end]
+            if textToInsert = @onSlash getCheckText, getText
+              buffer.delete [
+                [event.newRange.end.row, event.newRange.end.column - 2],
+                event.newRange.end
+              ]
+              buffer.insert [
+                  event.newRange.end.row, event.newRange.end.column - 2
+                ], textToInsert
 
-  findTagsIn: (text) ->
-    stack = []
-    while text
-      if text[0...4] is "<!--"
-        if (_text = @handleComment text)?
-          text = _text
+  # Takes functions that provide the data so we can lazily collect them
+  onSlash: (getCheckText, getText) ->
+    checkText = getCheckText()
+    if @stringEndsWith checkText, '</'
+      text = getText()
+      if tag = @getNextCloseableTag text
+        if tag.type == "xml"
+          return "</#{tag.element}>"
         else
-          stack = []
-          text = text[4..]
-      else if text[0...9] is "<![CDATA["
-        if (_text = @handleCDATA text)?
-          text = _text
-        else
-          stack = []
-          text = text[9..]
-      else if text[0] is "<"
-        text = @handleTag text, stack
+          return "#{tag.element}"
+    return null
+
+  getNextCloseableTag: (text) ->
+    unclosedTags = @findUnclosedTags text
+    if nextCloseableTag = unclosedTags.pop()
+      return nextCloseableTag
+    return null
+
+  # When a tag is opened a record of it is added to the stack, when the
+  # corresponding closing tag is found, its record is removed from the stack.
+  #
+  findUnclosedTags: (text, unclosedTags = []) ->
+    unless text == ""
+      if text[0] is "<"
+        text = @handleNextTag text, unclosedTags
+        return @findUnclosedTags text, unclosedTags
       else
         index = text.indexOf("<")
         if !!~index
           text = text.substr index
-        else
-          break
-    stack
+          return @findUnclosedTags text, unclosedTags
+    return unclosedTags
 
-  handleComment: (text) ->
-    ind = text.indexOf '-->'
-    if !!~ind
-      text.substr ind + 3
-    else
-      null
-
-  handleCDATA: (text) ->
-    ind = text.indexOf ']]>'
-    if !!~ind
-      text.substr ind + 3
-    else
-      null
-
-  handleTag: (text, stack) ->
-    if tag = @parseTag(text)
+  handleNextTag: (text, unclosedTags) ->
+    if tag = @parseNextTag text
       if tag.opening
         # opening tag, possibly empty
-        stack.push tag.element unless @isEmpty(tag.element)
-      # tag
+        unclosedTags.push {element: tag.element, type: tag.type} unless @isEmpty(tag.element)
       else if tag.closing
         # closing tag: find matching opening tag (if one exists)
-        while stack.length
-          break if stack.pop() is tag.element
+        _unclosedTags = unclosedTags.slice()
+        foundMatchingTag = false
+        while unclosedTags.length
+          currentTag = unclosedTags.pop()
+          if currentTag.element is tag.element and currentTag.type is tag.type
+            foundMatchingTag = true
+            break;
+        # If we didn't find a matching tag, we've just eaten through our stack!
+        # We have to revert it
+        if !foundMatchingTag
+          unclosedTags.splice 0, 0, _unclosedTags...
       else if tag.selfClosing
         # self closing tag: ignore it
       else
-        console.error 'There are problems...'
-      text.substr tag.length
+        console.error "This should be impossible..."
+      return text.substr tag.length
     else
       # no match
-      text.substr 1
+      return text.substr 1
 
-  parseTag: (text) ->
+  parseNextTag: (text) ->
+    for parser in @parsers
+      for test in parser.test
+        if @stringStartsWith(text, test)
+          return this[parser.parse](text)
+    null
+
+  parsers: [
+    {
+      test: ["<!--", "-->"]
+      parse: 'parseXMLComment'
+    }
+    {
+      test: ["<![CDATA[", "]]>"]
+      parse: 'parseXMLCDATA'
+    }
+    {
+      test: ["<"]
+      parse: 'parseXMLTag'
+    }
+  ]
+
+  parseXMLTag: (text) ->
     result = {
       opening: false
       closing: false
       selfClosing: false
       element: ''
+      type: 'xml'
       length: 0
     }
-    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-:]+)(=["'{](.*?)["'}])?)*\s*(\/)?>/i)
+    match = text.match(/<(\/)?([^\s\/>]+)(\s+([\w-:]+)(=["'`{](.*?)["'`}])?)*\s*(\/)?>/i)
     if match
       result.element     = match[2]
       result.length      = match[0].length
@@ -106,5 +139,61 @@ module.exports =
     else
       null
 
+  parseXMLComment: (text) ->
+    result = {
+      opening: false
+      closing: false
+      selfClosing: false
+      element: '-->'
+      type: 'xml-comment'
+      length: 0
+    }
+    match = text.match(/(<!--)|(-->)/)
+    if match
+      result.length  = match[0].length
+      result.opening = if match[1] then true else false
+      result.closing = if match[2] then true else false
+      result
+    else
+      null
+
+  parseXMLCDATA: (text) ->
+    result = {
+      opening: false
+      closing: false
+      selfClosing: false
+      element: ']]>'
+      type: 'xml-cdata'
+      length: 0
+    }
+    match = text.match(/(<!\[CDATA\[)|(\]\]>)/i)
+    if match
+      result.length  = match[0].length
+      result.opening = if match[1] then true else false
+      result.closing = if match[2] then true else false
+      result
+    else
+      null
+
   isEmpty: (tag) ->
-    @emptyTags.indexOf(tag.toLowerCase()) > -1
+    if tag
+      @emptyTags.indexOf(tag.toLowerCase()) > -1
+    else
+      false
+
+  # Utils
+
+  # Finds the minimum index out of two indexes, taking into account indexes of -1
+  minIndex: (a, b) ->
+    return a if a is b
+    return a if b < 0
+    return b if a < 0
+    return a if a < b
+    return b if b < a
+
+  # Checks if one string ends in another
+  stringEndsWith: (a, b) ->
+    a.substr(a.length - b.length, a.length) == b
+
+  stringStartsWith: (a, b) ->
+    a.substr(0, b.length) == b
