@@ -33,6 +33,12 @@ describe "LessThanSlash", ->
         '<!--<div class="moo"><a href="/cows">More cows!</a></div><'
       expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '-->'
 
+      getCheckText = ->
+        '<div class="moo"><a href="/cows"><!--More cows!--></'
+      getText = ->
+        '<div class="moo"><a href="/cows"><!--More cows!--><'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</a>'
+
     it "also works inside comments", ->
       getCheckText = ->
         '<!--<div class="moo"><a href="/cows">More cows!</a></'
@@ -46,6 +52,12 @@ describe "LessThanSlash", ->
       getText = ->
         '<![CDATA[<div class="moo"><a href="/cows">More cows!</a></div><'
       expect(LessThanSlash.onSlash(getCheckText, getText)).toBe ']]>'
+
+      getCheckText = ->
+        '<div class="moo"><a href="/cows"><![CDATA[More cows!]]></'
+      getText = ->
+        '<div class="moo"><a href="/cows"><![CDATA[More cows!]]><'
+      expect(LessThanSlash.onSlash(getCheckText, getText)).toBe '</a>'
 
     it "also works inside XML CDATA", ->
       getCheckText = ->
