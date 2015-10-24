@@ -57,14 +57,15 @@ module.exports =
 
   # When a tag is opened a record of it is added to the stack, when the
   # corresponding closing tag is found, its record is removed from the stack.
-  #
   findUnclosedTags: (text, unclosedTags = []) ->
     unless text == ""
-      if text[0] is "<"
+      if @preTests.indexOf(text[0]) > -1
         text = @handleNextTag text, unclosedTags
         return @findUnclosedTags text, unclosedTags
       else
-        index = text.indexOf("<")
+        index = @preTests
+          .map((testChar) -> text.indexOf(testChar))
+          .reduce(@minIndex)
         if !!~index
           text = text.substr index
           return @findUnclosedTags text, unclosedTags
@@ -83,7 +84,7 @@ module.exports =
           currentTag = unclosedTags.pop()
           if currentTag.element is tag.element and currentTag.type is tag.type
             foundMatchingTag = true
-            break;
+            break
         # If we didn't find a matching tag, we've just eaten through our stack!
         # We have to revert it
         if !foundMatchingTag
@@ -104,6 +105,9 @@ module.exports =
           return this[parser.parse](text)
     null
 
+  # Parsers must specify string match based tests for preliminary matching,
+  # after which they will be passed on to the parsing function which may either
+  # return a tag object or reject by passing null
   parsers: [
     {
       test: ["<!--", "-->"]
@@ -118,6 +122,22 @@ module.exports =
       parse: 'parseXMLTag'
     }
   ]
+
+  # Preliminary tests are used by findUnclosedTags for skipping over large
+  # potions of text. This should include each unique character lying at the
+  # beginning of a parser test. Failing to include the preTest for a parser
+  # will cause less-than-slash to ignore certain tags and produce unexpected
+  # outputs
+  # This could be computed by using
+  # @parsers
+  #   .map((parser) -> parser.test)
+  #   .reduce((a, b) -> a.concat(b))
+  #   .reduce((test) -> test[0])
+  #   .reduce((preTests, a) ->
+  #     if preTests.indexOf(a) === -1 then preTests.concat([a]) else preTests
+  #    , [])
+  # Perhaps we could compute this at init time, but I'm, just hard coding it for now
+  preTests: ["<", "]", "-"]
 
   parseXMLTag: (text) ->
     result = {
