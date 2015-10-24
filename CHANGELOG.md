@@ -1,3 +1,8 @@
+### v0.9.0
+
+- Refactor to easily support multiple/future tag parsers
+  - Thanks [MarcoThePoro](https://github.com/MarcoThePoro)!
+
 ### v0.8.0
 
 - Support for attributes spaced across multiple lines
