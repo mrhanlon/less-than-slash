@@ -1,3 +1,7 @@
+### v0.10.0
+
+- `findUnclosedTags` is now aware of other types of tags
+
 ### v0.9.0
 
 - Refactor to easily support multiple/future tag parsers
