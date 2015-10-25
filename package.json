@@ -1,7 +1,7 @@
 {
   "name": "less-than-slash",
   "main": "./lib/less-than-slash",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Adds automatic closing of HTML tags when less-than, slash (</) is typed.",
   "author": {
     "name": "Matthew R Hanlon",
