@@ -1,6 +1,10 @@
+### v0.11.0
+
+- Updated `findUnclosedTags` function to use `while` loop instead of recursion. On very long files the recursion caused `RangeError: Maximum call stack size exceeded`. #18 
+
 ### v0.10.0
 
-- `findUnclosedTags` is now aware of other types of tags
+- `findUnclosedTags` is now aware of other types of tags. #16
 
 ### v0.9.0
 
