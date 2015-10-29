@@ -57,18 +57,17 @@ module.exports =
 
   # When a tag is opened a record of it is added to the stack, when the
   # corresponding closing tag is found, its record is removed from the stack.
-  findUnclosedTags: (text, unclosedTags = []) ->
-    unless text == ""
+  findUnclosedTags: (text) ->
+    unclosedTags = []
+    while text != ''
       if @preTests.indexOf(text[0]) > -1
         text = @handleNextTag text, unclosedTags
-        return @findUnclosedTags text, unclosedTags
       else
         index = @preTests
           .map((testChar) -> text.indexOf(testChar))
           .reduce(@minIndex)
         if !!~index
           text = text.substr index
-          return @findUnclosedTags text, unclosedTags
     return unclosedTags
 
   handleNextTag: (text, unclosedTags) ->
