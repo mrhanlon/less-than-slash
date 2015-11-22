@@ -8,7 +8,7 @@ module.exports =
   config:
     emptyTags:
       type: "string"
-      default: "br, hr, img, input, link, meta, area, base, col, command, embed, keygen, param, source, track, wbr"
+      default: "!doctype, br, hr, img, input, link, meta, area, base, col, command, embed, keygen, param, source, track, wbr"
 
   activate: (state) ->
     # Register config change handler to update the empty tags list
