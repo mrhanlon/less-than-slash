@@ -117,6 +117,10 @@ module.exports =
       parse: 'parseXMLCDATA'
     }
     {
+      test: ["<%=", "%>"]
+      parse: 'parseNoOp'
+    }
+    {
       test: ["<"]
       parse: 'parseXMLTag'
     }
@@ -137,6 +141,9 @@ module.exports =
   #    , [])
   # Perhaps we could compute this at init time, but I'm, just hard coding it for now
   preTests: ["<", "]", "-"]
+
+  parseNoOp: (text) ->
+    null
 
   parseXMLTag: (text) ->
     result = {
