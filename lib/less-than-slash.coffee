@@ -5,19 +5,24 @@
 module.exports =
   emptyTags: []
 
+  disposable: {}
+
   config:
     emptyTags:
       type: "string"
       default: "!doctype, br, hr, img, input, link, meta, area, base, col, command, embed, keygen, param, source, track, wbr"
+
+  deactivate: (state) ->
+    @disposable[key].dispose() for key in Object.keys @disposable
 
   activate: (state) ->
     # Register config change handler to update the empty tags list
     atom.config.observe "less-than-slash.emptyTags", (value) =>
       @emptyTags = (tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/))
 
-    atom.workspace.observeTextEditors (editor) =>
+    @disposable._root = atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
-      buffer.onDidChange (event) =>
+      @disposable[buffer.id] = buffer.onDidChange (event) =>
         if event.newText == "/"
           # Ignore it if its right at the start of a line
           if event.newRange.start.column > 0
@@ -36,6 +41,10 @@ module.exports =
               buffer.insert [
                   event.newRange.end.row, event.newRange.end.column - 2
                 ], textToInsert
+
+      buffer.onDidDestroy (event) =>
+        @disposable[buffer.id].dispose()
+        delete @disposable[buffer.id]
 
   # Takes functions that provide the data so we can lazily collect them
   onSlash: (getCheckText, getText) ->
