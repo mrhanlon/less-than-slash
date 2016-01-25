@@ -1,3 +1,7 @@
+### v0.12.2
+
+- Fix bug when closing a split pane. #26
+
 ### v0.12.1
 
 - Add `deactivate` handler and properly handle disposables to prevent multiple event
