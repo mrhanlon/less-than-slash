@@ -1,5 +1,9 @@
 ### v0.12.2
 
+- Fix multiple event subscription when splitting editor panes. #27
+
+### v0.12.2
+
 - Fix bug when closing a split pane. #26
 
 ### v0.12.1
