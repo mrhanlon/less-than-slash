@@ -1,4 +1,4 @@
-### v0.12.2
+### v0.12.3
 
 - Fix multiple event subscription when splitting editor panes. #27
 
