@@ -22,30 +22,31 @@ module.exports =
 
     @disposable._root = atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
-      @disposable[buffer.id] = buffer.onDidChange (event) =>
-        if event.newText == "/"
-          # Ignore it if its right at the start of a line
-          if event.newRange.start.column > 0
-            getCheckText = ->
-              buffer.getTextInRange([
-                [event.newRange.start.row, 0],
-                event.newRange.end
-              ])
-            getText = ->
-              buffer.getTextInRange [[0, 0], event.oldRange.end]
-            if textToInsert = @onSlash getCheckText, getText
-              buffer.delete [
-                [event.newRange.end.row, event.newRange.end.column - 2],
-                event.newRange.end
-              ]
-              buffer.insert [
-                  event.newRange.end.row, event.newRange.end.column - 2
-                ], textToInsert
+      if not @disposable[buffer.id]
+        @disposable[buffer.id] = buffer.onDidChange (event) =>
+          if event.newText == "/"
+            # Ignore it if its right at the start of a line
+            if event.newRange.start.column > 0
+              getCheckText = ->
+                buffer.getTextInRange([
+                  [event.newRange.start.row, 0],
+                  event.newRange.end
+                ])
+              getText = ->
+                buffer.getTextInRange [[0, 0], event.oldRange.end]
+              if textToInsert = @onSlash getCheckText, getText
+                buffer.delete [
+                  [event.newRange.end.row, event.newRange.end.column - 2],
+                  event.newRange.end
+                ]
+                buffer.insert [
+                    event.newRange.end.row, event.newRange.end.column - 2
+                  ], textToInsert
 
-      buffer.onDidDestroy (event) =>
-        if @disposable[buffer.id]
-          @disposable[buffer.id].dispose()
-          delete @disposable[buffer.id]
+        buffer.onDidDestroy (event) =>
+          if @disposable[buffer.id]
+            @disposable[buffer.id].dispose()
+            delete @disposable[buffer.id]
 
   # Takes functions that provide the data so we can lazily collect them
   onSlash: (getCheckText, getText) ->
