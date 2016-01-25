@@ -43,8 +43,9 @@ module.exports =
                 ], textToInsert
 
       buffer.onDidDestroy (event) =>
-        @disposable[buffer.id].dispose()
-        delete @disposable[buffer.id]
+        if @disposable[buffer.id]
+          @disposable[buffer.id].dispose()
+          delete @disposable[buffer.id]
 
   # Takes functions that provide the data so we can lazily collect them
   onSlash: (getCheckText, getText) ->
