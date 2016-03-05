@@ -4,11 +4,8 @@
 #
 # Parser schema
 # name: <string> The name of the parser
-# trigger: <RegExp|func (string) -> <bool>> A RegExp that when tested
-#   using string.match(trigger), or a function that when tested using
-#   trigger(string) will return a boolean based on whether the string may trigger
-#   an autocompletion. (this should test for the beginning portion of a closing
-#   tag only).
+# trigger: <RegExp|func (string) -> <string>> A RegExp that captures the trigger in
+# group 0 or a function that takes the text and returns the trigger or null
 # test: <RegExp> determines whether the given string is a candidate
 #   for a full parse, (opening or closing)
 # parse: <func (string) -> <TagDescriptor|null>> A function that parses a tag from
@@ -80,13 +77,15 @@ module.exports =
         null
     getPair: ->
       return "]]>"
-  # DISABLED
   xmlcommentparser:
     name: 'xml-comment'
     # FIXME tries to close the comment immediately after you open it
     # eg. Input: `<!--` Result: `<!-->`
     # DISABLED FOR NOW
-    trigger: /(--)$/
+    trigger: (text) ->
+      # unless text then return false
+      match = text.match /(<!-{1,3})$|(--)$/
+      if (match and match[2]) then return match[2] else return null
     test: /^(<!--|-->)/
     parse: (text) ->
       result = {
@@ -100,8 +99,8 @@ module.exports =
       match = text.match(/(<!--|-->)/)
       if match
         result.length  = match[0].length
-        result.opening = if match[1] then true else false
-        result.closing = if match[2] then true else false
+        result.opening = if match[1] is '<!--' then true else false
+        result.closing = if match[1] is '-->' then true else false
         result
       else
         null

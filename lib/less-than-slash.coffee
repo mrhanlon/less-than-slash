@@ -16,8 +16,7 @@ module.exports =
   parsers: [
     xmlparser,
     xmlcdataparser,
-    # FIXME see parsers.coffee
-    # xmlcommentparser,
+    xmlcommentparser,
     underscoretemplateparser,
     # mustacheparser
   ]
