@@ -32,5 +32,12 @@
   "engines": {
     "atom": ">0.50.0"
   },
+  "providedServices": {
+    "autocomplete.provider": {
+      "versions": {
+        "2.0.0": "provide"
+      }
+    }
+  },
   "dependencies": {}
 }
