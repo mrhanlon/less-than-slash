@@ -18,6 +18,7 @@ module.exports =
     xmlcdataparser,
     xmlcommentparser,
     underscoretemplateparser,
+    # disabled due to issue with '}}' insertion, see parser
     # mustacheparser
   ]
 
@@ -30,7 +31,7 @@ module.exports =
       enum: ["Immediate", "Suggest"]
     emptyTags:
       title: "Empty tags"
-      description: "Elements that do not need a matching closing tag."
+      description: "A space separated list of elements that do not need a matching closing tag."
       type: "string"
       default: [
         "!doctype",
@@ -65,9 +66,7 @@ module.exports =
         if event.newText is '' then return
         if not @forceComplete then return
         if prefix = @getPrefix(editor, event.newRange.end, @parsers)
-          console.log "prefix is", prefix
           if completion = @getCompletion(editor, event.newRange.end, prefix)
-            console.log completion
             buffer.delete [
               [event.newRange.end.row, event.newRange.end.column - prefix.length]
               event.newRange.end
@@ -93,14 +92,10 @@ module.exports =
 
   getCompletion: (editor, bufferPosition, prefix) ->
     text = editor.getTextInRange [[0, 0], bufferPosition]
-    console.log text
     unclosedTags = @reduceTags(@traverse(text, @parsers))
-    console.log unclosedTags
     if tagDescriptor = unclosedTags.pop()
-      console.log prefix, tagDescriptor, @getParser(tagDescriptor.type, @parsers).trigger, @matchPrefix(prefix, @getParser(tagDescriptor.type, @parsers))
-      # Check that this completion corresponds to the trigger
+    # Check that this completion corresponds to the trigger
       if @matchPrefix(prefix, @getParser(tagDescriptor.type, @parsers))
-        console.log 'the completion is ', @getParser(tagDescriptor.type, @parsers).getPair(tagDescriptor)
         return @getParser(tagDescriptor.type, @parsers).getPair(tagDescriptor)
     return null
 
