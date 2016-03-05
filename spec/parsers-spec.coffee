@@ -1,3 +1,8 @@
+##
+# file: parsers-spec.coffee
+# author: @MarcoThePoro
+#
+
 {xmlparser, xmlcdataparser, xmlcommentparser} = require "../lib/parsers"
 
 describe "xmlparser", ->

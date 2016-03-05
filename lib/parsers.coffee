@@ -2,6 +2,7 @@
 # file: parsers.coffee
 # author: @marcotheporo
 #
+
 # Parser schema
 # name: <string> The name of the parser
 # trigger: <RegExp|func (string) -> <string>> A RegExp that captures the trigger in

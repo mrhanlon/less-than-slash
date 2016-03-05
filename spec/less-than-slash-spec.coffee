@@ -1,6 +1,6 @@
 ##
-# file: provider-spec.coffee
-# author: @MarcoThePoro
+# file: less-than-slash-spec.coffee
+# author: @mrhanlon
 #
 
 {reduceTags, traverse, getParser} = require '../lib/less-than-slash.coffee'
