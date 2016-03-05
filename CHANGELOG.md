@@ -1,6 +1,24 @@
+### v0.12.3
+
+- Fix multiple event subscription when splitting editor panes. #27
+
+### v0.12.2
+
+- Fix bug when closing a split pane. #26
+
+### v0.12.1
+
+- Add `deactivate` handler and properly handle disposables to prevent multiple event
+  subscription. #22 #23 #25
+
+### v0.12.0
+
+- Add support for underscore templates. #20
+
 ### v0.11.0
 
-- Updated `findUnclosedTags` function to use `while` loop instead of recursion. On very long files the recursion caused `RangeError: Maximum call stack size exceeded`. #18 
+- Updated `findUnclosedTags` function to use `while` loop instead of recursion. On very
+  long files the recursion caused `RangeError: Maximum call stack size exceeded`. #18
 
 ### v0.10.0
 

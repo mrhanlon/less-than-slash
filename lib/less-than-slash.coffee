@@ -22,6 +22,8 @@ module.exports =
     # mustacheparser
   ]
 
+  disposable: {}
+
   config:
     completionMode:
       title: "Completion Mode"
@@ -53,6 +55,9 @@ module.exports =
         "wbr"
       ].join(" ")
 
+  deactivate: (state) ->
+    @disposable[key].dispose() for key in Object.keys @disposable
+
   activate: (state) ->
     # Register config change handler to update the empty tags list
     atom.config.observe "less-than-slash.emptyTags", (value) ->
@@ -60,18 +65,24 @@ module.exports =
     atom.config.observe "less-than-slash.completionMode", (value) =>
       @forceComplete = value.toLowerCase() is "immediate"
 
-    @forceCompleter = atom.workspace.observeTextEditors (editor) =>
+    @disposable._root = atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
-      buffer.onDidChange (event) =>
-        if event.newText is '' then return
-        if not @forceComplete then return
-        if prefix = @getPrefix(editor, event.newRange.end, @parsers)
-          if completion = @getCompletion(editor, event.newRange.end, prefix)
-            buffer.delete [
-              [event.newRange.end.row, event.newRange.end.column - prefix.length]
-              event.newRange.end
-            ]
-            buffer.insert [event.newRange.end.row, event.newRange.end.column - prefix.length], completion
+      if not @disposable[buffer.id]
+        @disposable[buffer.id] = buffer.onDidChange (event) =>
+          if event.newText is '' then return
+          if not @forceComplete then return
+          if prefix = @getPrefix(editor, event.newRange.end, @parsers)
+            if completion = @getCompletion(editor, event.newRange.end, prefix)
+              buffer.delete [
+                [event.newRange.end.row, event.newRange.end.column - prefix.length]
+                event.newRange.end
+              ]
+              buffer.insert [event.newRange.end.row, event.newRange.end.column - prefix.length], completion
+
+        buffer.onDidDestroy (event) =>
+          if @disposable[buffer.id]
+            @disposable[buffer.id].dispose()
+            delete @disposable[buffer.id]
 
     @provider =
       selector: ".text, .source"
@@ -86,9 +97,6 @@ module.exports =
               prefix: unless activatedManually then prefix else undefined
               type: 'tag'
             }]
-
-  deactivate: ->
-    @forceCompleter.dispose()
 
   getCompletion: (editor, bufferPosition, prefix) ->
     text = editor.getTextInRange [[0, 0], bufferPosition]
