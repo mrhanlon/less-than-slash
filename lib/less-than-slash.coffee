@@ -89,7 +89,7 @@ module.exports =
               type: 'tag'
             }]
 
-  deactivate: () ->
+  deactivate: ->
     @forceCompleter.dispose()
 
   getCompletion: (editor, bufferPosition, prefix) ->

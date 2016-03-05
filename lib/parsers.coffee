@@ -78,7 +78,7 @@ module.exports =
         result
       else
         null
-    getPair: () ->
+    getPair: ->
       return "]]>"
   # DISABLED
   xmlcommentparser:
@@ -105,7 +105,7 @@ module.exports =
         result
       else
         null
-    getPair: () ->
+    getPair: ->
       return "-->"
   underscoretemplateparser:
     name: 'underscore-template',

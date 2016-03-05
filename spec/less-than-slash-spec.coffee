@@ -3,8 +3,8 @@
 # author: @MarcoThePoro
 #
 
-{ reduceTags, traverse, getParser } = require '../lib/less-than-slash.coffee'
-{ xmlparser } = require '../lib/parsers.coffee'
+{reduceTags, traverse, getParser} = require '../lib/less-than-slash.coffee'
+{xmlparser} = require '../lib/parsers.coffee'
 
 describe "LessThanSlash", ->
   parsers = [xmlparser]
