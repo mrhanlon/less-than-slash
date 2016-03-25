@@ -141,6 +141,10 @@ describe "xmlparser", ->
         length: 12
       }
 
+    it "does not capture leading `<`s", ->
+      text = "<<<<p>I love less than!"
+      expect(xmlparser.parse(text)).toEqual null
+
     it "does not capture opening comments in front of tags", ->
       text = "<!--<div>"
       expect(xmlparser.parse(text)).toEqual null
