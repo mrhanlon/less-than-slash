@@ -27,7 +27,7 @@ module.exports =
   config:
     completionMode:
       title: "Completion Mode"
-      description: "Choose immediate to have your tags completed immediately (the traditional way). Choose suggest to have them appear in an autocomplete suggestion box."
+      description: "Choose immediate to have your tags completed immediately after you type '</' (the traditional way). Choose suggest to have them appear in an autocomplete suggestion box."
       type: "string",
       default: "Immediate"
       enum: ["Immediate", "Suggest"]
