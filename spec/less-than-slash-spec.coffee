@@ -375,6 +375,10 @@ describe "LessThanSlash", ->
         length: 12
       }
 
+    it "does not consume leading tag openings (<)", ->
+      text = "<<a>"
+      expect(LessThanSlash.parseXMLTag text).toBe null
+
   describe "parseXMLComment", ->
     it "parses comments as if they were tags", ->
       text = "<!--"
