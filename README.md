@@ -21,7 +21,7 @@ You can choose between _Immediate Mode_ (default) to have tags closed seamlessly
 
 You can specify a list of "Empty Tags" to be ignored from auto-closing. The default value for "Empty Tags" is:
 
-`br`, `hr`, `img`, `input`, `link`, `meta`, `area`, `base`, `col`, `command`, `embed`, `keygen`, `param`, `source`, `track`, `wbr`
+`!doctype`, `br`, `hr`, `img`, `input`, `link`, `meta`, `area`, `base`, `col`, `command`, `embed`, `keygen`, `param`, `source`, `track`, `wbr`
 
 The plugin will automatically ignore any of these self-closing tags. This is useful for frameworks like Angular.js, which allows the definition of custom elements.
 
