@@ -33,7 +33,7 @@ module.exports =
       enum: ["Immediate", "Suggest"]
     emptyTags:
       title: "Empty tags"
-      description: "A space separated list of elements that do not need a matching closing tag."
+      description: "A space separated list of elements to be ignored from auto-closing."
       type: "string"
       default: [
         "!doctype",

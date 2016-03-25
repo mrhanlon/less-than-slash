@@ -23,7 +23,7 @@ You can specify a list of "Empty Tags" to be ignored from auto-closing. The defa
 
 `br`, `hr`, `img`, `input`, `link`, `meta`, `area`, `base`, `col`, `command`, `embed`, `keygen`, `param`, `source`, `track`, `wbr`
 
-The plugin will automatically ignore any self-closing tags. This is useful for frameworks like Angular.js, which allows the definition of custom elements.
+The plugin will automatically ignore any of these self-closing tags. This is useful for frameworks like Angular.js, which allows the definition of custom elements.
 
 ## Contributing
 
