@@ -142,8 +142,5 @@ module.exports =
       else
         return null
     getPair: (tagDescriptor) ->
-      # FIXME HACK If you type `{{`, the editor will automagically insert the
-      #   matching `}}`. If we include the `}}` in the rendered tag then after
-      #   completing you get `{{/blah}}}}`. In provider mode, Autocomplete plus
-      #   mitigates this, but in classic mode, the problem persists.
-      "{{/#{tagDescriptor.element}}}"
+      "{{/#{tagDescriptor.element}#{unless @omitClosingBraces then "}}" else ""}"
+    omitClosingBraces: false

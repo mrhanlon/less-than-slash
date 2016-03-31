@@ -18,8 +18,7 @@ module.exports =
     xmlcdataparser,
     xmlcommentparser,
     underscoretemplateparser,
-    # disabled due to issue with '}}' insertion, see parser
-    # mustacheparser
+    mustacheparser
   ]
 
   disposable: {}
@@ -63,6 +62,7 @@ module.exports =
     atom.config.observe "less-than-slash.emptyTags", (value) ->
       xmlparser.emptyTags = (tag.toLowerCase() for tag in value.split(/\s*[\s,|]+\s*/))
     atom.config.observe "less-than-slash.completionMode", (value) =>
+      mustacheparser.omitClosingBraces = value.toLowerCase() is "immediate"
       @forceComplete = value.toLowerCase() is "immediate"
 
     @disposable._root = atom.workspace.observeTextEditors (editor) =>
@@ -78,6 +78,10 @@ module.exports =
                 event.newRange.end
               ]
               buffer.insert [event.newRange.end.row, event.newRange.end.column - prefix.length], completion
+              # If we inserted a mustache closing tag, we need to advance the
+              # cursor past the automatically inserted `}}`
+              if (prefix is "{{/" and @forceComplete)
+                editor.moveRight(2)
 
         buffer.onDidDestroy (event) =>
           if @disposable[buffer.id]
