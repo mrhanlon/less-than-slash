@@ -1,3 +1,13 @@
+### V0.14.0
+
+Enhancements:
+
+- Autocomplete plus integration #24
+
+Bug fixes: 
+
+- Editor crashes when <br> closed #36
+
 ### v0.13.0
 
 Bug fixes:
