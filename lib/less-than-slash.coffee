@@ -55,7 +55,9 @@ module.exports =
       ].join(" ")
 
   deactivate: (state) ->
-    @disposable[key].dispose() for key in Object.keys @disposable
+    for key in Object.keys @disposable
+      @disposable[key].dispose()
+      delete @disposable[key]
 
   activate: (state) ->
     # Register config change handler to update the empty tags list

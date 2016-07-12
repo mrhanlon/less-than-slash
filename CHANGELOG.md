@@ -1,3 +1,10 @@
+### v0.13.0
+
+Bug fixes:
+
+- Fix disposal #29
+- Fix issue with "double less-than's" #32
+
 ### v0.12.3
 
 - Fix multiple event subscription when splitting editor panes. #27
