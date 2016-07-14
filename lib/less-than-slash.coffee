@@ -30,6 +30,7 @@ module.exports =
       type: "string",
       default: "Immediate"
       enum: ["Immediate", "Suggest"]
+      order: 1
     emptyTags:
       title: "Empty tags"
       description: "A space separated list of elements to be ignored from auto-closing."
@@ -53,6 +54,13 @@ module.exports =
         "track",
         "wbr"
       ].join(" ")
+      order: 2
+    returnCursor:
+      title: "Return cursor"
+      description: "Returns the cursor to the beginning of the closing tag after it's been inserted (does not work in suggest mode)"
+      type: "boolean"
+      default: false
+      order: 3
 
   deactivate: (state) ->
     for key in Object.keys @disposable
@@ -66,6 +74,8 @@ module.exports =
     atom.config.observe "less-than-slash.completionMode", (value) =>
       mustacheparser.omitClosingBraces = value.toLowerCase() is "immediate"
       @forceComplete = value.toLowerCase() is "immediate"
+    atom.config.observe "less-than-slash.returnCursor", (value) =>
+      @returnCursor = value
 
     @disposable._root = atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
@@ -82,8 +92,10 @@ module.exports =
               buffer.insert [event.newRange.end.row, event.newRange.end.column - prefix.length], completion
               # If we inserted a mustache closing tag, we need to advance the
               # cursor past the automatically inserted `}}`
-              if (prefix is "{{/" and @forceComplete)
+              if (prefix is "{{/" and @forceComplete and not @returnCursor)
                 editor.moveRight(2)
+              if @returnCursor
+                editor.moveLeft(completion.length)
 
         buffer.onDidDestroy (event) =>
           if @disposable[buffer.id]
