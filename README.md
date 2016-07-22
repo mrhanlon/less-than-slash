@@ -25,6 +25,10 @@ You can specify a list of "Empty Tags" to be ignored from auto-closing. The defa
 
 The plugin will automatically ignore any of these self-closing tags. This is useful for frameworks like Angular.js, which allows the definition of custom elements.
 
+### Return cursor
+
+Returns the cursor to the beginning of the closing tag so you can write both the opening and closing tags before writing code in between them. (disabled by default)
+
 ## Contributing
 
 Please follow the guidelines for [Contributing to Atom](https://atom.io/docs/latest/contributing).
