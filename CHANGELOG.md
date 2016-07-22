@@ -1,4 +1,6 @@
-### V0.15.0
+### v0.16.0
+
+The apm publisher bugged out an skipped v0.15.0.
 
 Enhancements:
 
@@ -11,7 +13,7 @@ Bug fixes:
 
 - XML Parser closes comment tags; #39.
 
-### V0.14.0
+### v0.14.0
 
 Enhancements:
 
