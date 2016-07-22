@@ -149,6 +149,10 @@ describe "xmlparser", ->
       text = "<!--<div>"
       expect(xmlparser.parse(text)).toEqual null
 
+    it "does not capture comments", ->
+      text = "<!-- COMMENT -->>"
+      expect(xmlparser.parse(text)).toEqual null
+
   describe "getPair", ->
     it "returns the appropriate closing tag", ->
       expect(xmlparser.getPair(xmlparser.parse('<div>'))).toBe('</div>')
