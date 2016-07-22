@@ -1,3 +1,16 @@
+### V0.15.0
+
+Enhancements:
+
+- Added 'return cursor' setting. When enabled, the cursor will be placed 
+  just closed tag. This allows to you write both the opening and closing
+  tag first, then return the cursor to insert between the just-typed 
+  tags; #37.
+
+Bug fixes: 
+
+- XML Parser closes comment tags; #39.
+
 ### V0.14.0
 
 Enhancements:
