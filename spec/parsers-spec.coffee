@@ -97,6 +97,17 @@ describe "xmlparser", ->
         length: 37
       }
 
+    it "works when property values are spread across multiple lines", ->
+      text = "<div\n  style={\n    fontFamily: \"Comic Sans MS\",\n  }\n>"
+      expect(xmlparser.parse(text)).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'div'
+        type: 'xml'
+        length: 53
+      }
+
     it "works around lone properties", ->
       text = "<input type=\"text\" required/>"
       expect(xmlparser.parse(text)).toEqual {
