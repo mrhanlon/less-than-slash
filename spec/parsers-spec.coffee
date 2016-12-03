@@ -141,6 +141,17 @@ describe "xmlparser", ->
         length: 53
       }
 
+    it "works with JSX spread properties", ->
+      text = "<MyComponent {...props} {...{ style: { fontFamily: 'Comic Sans MS' } }}>"
+      expect(xmlparser.parse(text)).toEqual {
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'MyComponent'
+        type: 'xml'
+        length: 72
+      }
+
     it "works around lone properties", ->
       text = "<input type=\"text\" required/>"
       expect(xmlparser.parse(text)).toEqual {
