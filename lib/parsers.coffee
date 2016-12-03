@@ -39,9 +39,8 @@ module.exports =
         type: @name
         length: 0
       }
+      match = text.match(/^<(\/)?([^\s\/<>!][^\s\/<>]*)(\s+([\w-:\[\]\(\)\*\@\#]+|\{\.\.\..*?\})(=["'`{]([\S\s]*?)["'`}])?)*\s*(\/)?>/i)
 
-      match = text.match(/^<(\/)?([^\s\/<>!][^\s\/<>]*)(\s+([\w-:\[\]\(\)\*\@\#]+)(=["'`{]([\S\s]*?)["'`}])?)*\s*(\/)?>/i)
-      # match = text.match(/^<(\/)?([^\s\/<>!][^\s\/<>]*)(\s+([\w-:]+)(=["'`{]([\S\s]*?)["'`}])?)*\s*(\/)?>/i)
       if match
         result.element     = match[2]
         result.length      = match[0].length
