@@ -29,7 +29,7 @@ module.exports =
   xmlparser:
     name: "xml"
     trigger: /<\/$/
-    test: /^</
+    test: /^<.*?>/
     parse: (text) ->
       result = {
         opening: false
