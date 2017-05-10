@@ -97,6 +97,42 @@ describe "xmlparser", ->
         length: 37
       }
 
+    it "handles angular-style brackets", ->
+      text = "<div [ngClass]=\"{'foo': true}\">"
+      expect(xmlparser.parse(text)).toEqual {
+        opening: true
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'div'
+        type: 'xml'
+        length: 31
+      }
+
+    it "handles angular-style parentheses", ->
+      text = "<div (ngClass)=\"{'foo': true}\">"
+      expect(xmlparser.parse(text)).toEqual {
+        opening: true
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'div'
+        type: 'xml'
+        length: 31
+      }
+
+    it "handles angular-style special characters", ->
+      text = "<div @\#*ngClass=\"{'foo': true}\">"
+      expect(xmlparser.parse(text)).toEqual {
+        opening: true
+        opening: true
+        closing: false
+        selfClosing: false
+        element: 'div'
+        type: 'xml'
+        length: 32
+      }
+
     it "works when property values are spread across multiple lines", ->
       text = "<div\n  style={\n    fontFamily: \"Comic Sans MS\",\n  }\n>"
       expect(xmlparser.parse(text)).toEqual {
