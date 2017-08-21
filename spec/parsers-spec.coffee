@@ -3,7 +3,7 @@
 # author: @MarcoThePoro
 #
 
-{xmlparser, xmlcdataparser, xmlcommentparser} = require "../lib/parsers"
+{xmlparser, xmlcdataparser, xmlcommentparser, phpechoparser} = require "../lib/parsers"
 
 describe "xmlparser", ->
   describe "trigger", ->
@@ -101,7 +101,6 @@ describe "xmlparser", ->
       text = "<div [ngClass]=\"{'foo': true}\">"
       expect(xmlparser.parse(text)).toEqual {
         opening: true
-        opening: true
         closing: false
         selfClosing: false
         element: 'div'
@@ -113,7 +112,6 @@ describe "xmlparser", ->
       text = "<div (ngClass)=\"{'foo': true}\">"
       expect(xmlparser.parse(text)).toEqual {
         opening: true
-        opening: true
         closing: false
         selfClosing: false
         element: 'div'
@@ -124,7 +122,6 @@ describe "xmlparser", ->
     it "handles angular-style special characters", ->
       text = "<div @\#*ngClass=\"{'foo': true}\">"
       expect(xmlparser.parse(text)).toEqual {
-        opening: true
         opening: true
         closing: false
         selfClosing: false
@@ -277,3 +274,18 @@ describe "xmlcommentparser", ->
     it "returns null when there is no comment", ->
       expect(xmlcommentparser.parse('no comment here ┐(ﾟ～ﾟ)┌')).toBe null
       expect(xmlcommentparser.parse("<comment>Hah! You thought this was a comment!")).toBe null
+
+describe "phpechoparser", ->
+  describe "parse", ->
+    it "parses php echo shorthand", ->
+      expect(phpechoparser.parse('<?=$blah;?>')).toEqual {
+        opening: false
+        closing: false
+        selfClosing: true
+        element: 'php-echo-shorthand'
+        type: 'php-echo-shorthand'
+        length: 11
+      }
+
+    it "returns null when there's no php echo shorthand", ->
+      expect(phpechoparser.parse('<marquee>No php here ┐(ﾟ～ﾟ)┌</marquee>')).toBe null

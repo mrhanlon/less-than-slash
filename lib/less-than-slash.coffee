@@ -8,7 +8,8 @@
   xmlcdataparser,
   xmlcommentparser,
   underscoretemplateparser,
-  mustacheparser
+  mustacheparser,
+  phpechoparser
 } = require './parsers'
 
 module.exports =
@@ -18,7 +19,8 @@ module.exports =
     xmlcdataparser,
     xmlcommentparser,
     underscoretemplateparser,
-    mustacheparser
+    mustacheparser,
+    phpechoparser
   ]
 
   disposable: {}
