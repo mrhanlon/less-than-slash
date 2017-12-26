@@ -78,8 +78,6 @@ module.exports =
       @returnCursor = value
 
     @disposable._root = atom.workspace.observeTextEditors (editor) =>
-      buffer = editor.getBuffer()
-
       @disposable[editor.id] = editor.onWillInsertText (event) =>
         # If in suggest mode, the autocomplete provider will be invoked instead
         if not @forceComplete then return
