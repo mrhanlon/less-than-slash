@@ -79,23 +79,28 @@ module.exports =
 
     @disposable._root = atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
+
+      # Only register change handler once per file
       if not @disposable[buffer.id]
         @disposable[buffer.id] = buffer.onDidChange (event) =>
-          if event.newText is '' then return
+          # If in suggest mode, the autocomplete provider will be invoked instead
           if not @forceComplete then return
-          if prefix = @getPrefix(editor, event.newRange.end, @parsers)
-            if completion = @getCompletion(editor, event.newRange.end, prefix)
-              buffer.delete [
-                [event.newRange.end.row, event.newRange.end.column - prefix.length]
-                event.newRange.end
-              ]
-              buffer.insert [event.newRange.end.row, event.newRange.end.column - prefix.length], completion
-              # If we inserted a mustache closing tag, we need to advance the
-              # cursor past the automatically inserted `}}`
-              if (prefix is "{{/" and @forceComplete and not @returnCursor)
-                editor.moveRight(2)
-              if @returnCursor
-                editor.moveLeft(completion.length)
+
+          for _, change of event.changes
+            if change.newText is '' then return
+            if prefix = @getPrefix(editor, change.newRange.end, @parsers)
+              if completion = @getCompletion(editor, change.newRange.end, prefix)
+                buffer.delete [
+                  [change.newRange.end.row, change.newRange.end.column - prefix.length]
+                  change.newRange.end
+                ]
+                buffer.insert [change.newRange.end.row, change.newRange.end.column - prefix.length], completion
+                # If we inserted a mustache closing tag, we need to advance the
+                # cursor past the automatically inserted `}}`
+                if (prefix is "{{/" and @forceComplete and not @returnCursor)
+                  editor.moveRight(2)
+                if @returnCursor
+                  editor.moveLeft(completion.length)
 
         buffer.onDidDestroy (event) =>
           if @disposable[buffer.id]
