@@ -30,7 +30,7 @@
   },
   "license": "MIT",
   "engines": {
-    "atom": ">1.23.0"
+    "atom": ">0.50.0"
   },
   "providedServices": {
     "autocomplete.provider": {
