@@ -80,34 +80,45 @@ module.exports =
     @disposable._root = atom.workspace.observeTextEditors (editor) =>
       buffer = editor.getBuffer()
 
-      # Only register change handler once per file
-      if not @disposable[buffer.id]
-        @disposable[buffer.id] = buffer.onDidChange (event) =>
-          # If in suggest mode, the autocomplete provider will be invoked instead
-          if not @forceComplete then return
+      @disposable[editor.id] = editor.onWillInsertText (event) =>
+        # If in suggest mode, the autocomplete provider will be invoked instead
+        if not @forceComplete then return
 
-          cursors = []
+        cursors = editor.getCursorBufferPositions()
 
-          for _, change of event.changes
-            if change.newText is '' then return
-            if prefix = @getPrefix(editor, change.newRange.end, @parsers)
-              if completion = @getCompletion(editor, change.newRange.end, prefix)
-                editor.setCursorBufferPosition(change.newRange.end)
-                for _ in [0...prefix.length]
-                  editor.backspace()
-                editor.insertText(completion)
-                if @returnCursor
-                  editor.moveLeft(completion.length)
-                cursors.push(editor.getCursorBufferPosition())
+        editor.transact =>
+          # For every cursor, check if the new text would trigger a completion
+          for i, position of cursors
+            line = editor.getTextInRange([[position.row, 0], position]) + event.text
+
+            for _, parser of @parsers
+              # Check if this might trigger a completion
+              if prefix = @matchPrefix line, parser
+                # Generate a completion if possible
+                if completion = @getCompletion(editor, position, prefix)
+                  # Edit in the new text
+                  event.cancel()
+                  editor.setCursorBufferPosition(position)
+                  for _ in [0...(prefix.length - event.text.length)]
+                    editor.backspace()
+                  editor.insertText(completion)
+
+                  # Place the cursor before the completion if needed
+                  if @returnCursor
+                    editor.moveLeft(completion.length)
+
+                  # Replace the cursor with one at the new position
+                  cursors.splice(i, 1, editor.getCursorBufferPosition())
+                break
 
           if cursors.length > 1
             cursors.forEach (position, i) ->
               editor.addCursorAtBufferPosition(position)
 
-        buffer.onDidDestroy (event) =>
-          if @disposable[buffer.id]
-            @disposable[buffer.id].dispose()
-            delete @disposable[buffer.id]
+      editor.onDidDestroy (event) =>
+        if @disposable[editor.id]
+          @disposable[editor.id].dispose()
+          delete @disposable[editor.id]
 
     @provider =
       selector: ".text, .source"
