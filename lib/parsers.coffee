@@ -120,6 +120,22 @@ module.exports =
         length: text.match(@test)[0].length
       }
     getPair: null
+  phpechoparser:
+    name: 'php-echo-shorthand'
+    trigger: null
+    test: /<\?=.+?\?>/
+    parse: (text) ->
+      match = text.match(@test)
+      if not match then return null
+      {
+        opening: false
+        closing: false
+        selfClosing: true
+        element: 'php-echo-shorthand'
+        type: @name
+        length: match[0].length
+      }
+    getPair: null
   # DISABLED
   mustacheparser:
     name: 'mustache',
