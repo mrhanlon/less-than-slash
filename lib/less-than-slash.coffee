@@ -85,35 +85,41 @@ module.exports =
         if not @forceComplete then return
 
         cursors = editor.getCursorBufferPositions()
+        completions = []
 
-        editor.transact =>
-          # For every cursor, check if the new text would trigger a completion
-          for i, position of cursors
-            line = editor.getTextInRange([[position.row, 0], position]) + event.text
+        # Check cursor positions to see if they need a completion
+        for i, position of cursors
+          line = editor.getTextInRange([[position.row, 0], position]) + event.text
 
-            for _, parser of @parsers
-              # Check if this might trigger a completion
-              if prefix = @matchPrefix line, parser
-                # Generate a completion if possible
-                if completion = @getCompletion(editor, position, prefix)
-                  # Edit in the new text
-                  event.cancel()
-                  editor.setCursorBufferPosition(position)
-                  for _ in [0...(prefix.length - event.text.length)]
-                    editor.backspace()
-                  editor.insertText(completion)
-
-                  # Place the cursor before the completion if needed
-                  if @returnCursor
-                    editor.moveLeft(completion.length)
-
-                  # Replace the cursor with one at the new position
-                  cursors.splice(i, 1, editor.getCursorBufferPosition())
+          for _, parser of @parsers
+            # Check if this might trigger a completion
+            if prefix = @matchPrefix line, parser
+              # Generate a completion if possible
+              if completion = @getCompletion(editor, position, prefix)
+                completions.push({position, prefix, completion})
                 break
 
-          if cursors.length > 1
-            cursors.forEach (position, i) ->
-              editor.addCursorAtBufferPosition(position)
+        # Apply all completions in a single transaction
+        if completions.length
+          editor.transact =>
+            for i, {position, prefix, completion} of completions
+              # Edit in the new text
+              event.cancel()
+              editor.setCursorBufferPosition(position)
+              for _ in [0...(prefix.length - event.text.length)]
+                editor.backspace()
+              editor.insertText(completion)
+
+              # Place the cursor before the completion if needed
+              if @returnCursor
+                editor.moveLeft(completion.length)
+
+              # Replace the cursor with one at the new position
+              cursors.splice(i, 1, editor.getCursorBufferPosition())
+
+            if cursors.length > 1
+              cursors.forEach (position, i) ->
+                editor.addCursorAtBufferPosition(position)
 
       editor.onDidDestroy (event) =>
         if @disposable[editor.id]
