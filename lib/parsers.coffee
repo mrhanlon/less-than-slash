@@ -45,7 +45,7 @@ module.exports =
       if match
         result.element     = match[2]
         result.length      = match[0].length
-        if @emptyTags.indexOf(result.element.toLowerCase()) > -1
+        if @emptyTags.indexOf(result.element) > -1
           result.selfClosing = true
         else
           result.opening     = if match[1] or match[7] then false else true
