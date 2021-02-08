@@ -1,12 +1,16 @@
 # </ Less Than-Slash
 
+## Project Status
+
 ** :warning: This package is deprecated. :warning: **
 
+Version 0.20.0 disables this package due to reported performance issues. If you would like to continue using Less Than-Slash then please downgrade to 0.19.0. At this time I am unable to continue maintaining this package. If anyone one the community has interest in taking ownership of Less Than-Slash please open an issue and arrangements can be made.
+
+---
 
 [![Build Status](https://travis-ci.org/mrhanlon/less-than-slash.png)](https://travis-ci.org/mrhanlon/less-than-slash)
 
 Atom.io package for closing open tags when less-than, slash (`</`) is typed, like in Sublime Text 3.
-
 
 ![Less Than Slash](https://mrhanlon.github.io/images/less-than-slash.gif)
 
