@@ -1,15 +1,19 @@
+### v0.17.0
+
+Deprecated the package.
+
 ### v0.16.0
 
 The apm publisher bugged out an skipped v0.15.0.
 
 Enhancements:
 
-- Added 'return cursor' setting. When enabled, the cursor will be placed 
+- Added 'return cursor' setting. When enabled, the cursor will be placed
   just closed tag. This allows to you write both the opening and closing
-  tag first, then return the cursor to insert between the just-typed 
+  tag first, then return the cursor to insert between the just-typed
   tags; #37.
 
-Bug fixes: 
+Bug fixes:
 
 - XML Parser closes comment tags; #39.
 
@@ -19,7 +23,7 @@ Enhancements:
 
 - Autocomplete plus integration #24
 
-Bug fixes: 
+Bug fixes:
 
 - Editor crashes when <br> closed #36
 
